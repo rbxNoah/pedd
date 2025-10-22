@@ -318,13 +318,24 @@ footer {
 }
 .gist-text {
     white-space: pre-line;
-    line-height: 0.5;
-    margin-bottom: 20px;
+    line-height: 1.9; /* espaçamento entre linhas para não embolar */
+    margin-bottom: 25px;
     text-align: center;
-    font-size: 1rem; /* maior destaque */
-    font-weight: 600; /* deixa mais forte */
-    color: rgba(255, 255
-    255, 1); /* tom roxo claro */
-    text-shadow: 0 0 8px rgba(187, 134, 252, 0.5); /* brilho leve */
+    font-size: 1.4rem; /* destaque leve e equilibrado */
+    font-weight: 600; /* mais forte */
+    color: rgba(255, 255, 255, 1); /* branco puro */
+    text-shadow: 0 0 8px rgba(187, 134, 252, 0.5); /* brilho roxo suave */
     letter-spacing: 0.5px;
+    max-width: 90%; /* impede o texto de colar nas laterais */
+    word-wrap: break-word;
+    padding: 0 10px; /* respiro lateral */
+}
+
+/* versão otimizada pra celular */
+@media (max-width: 600px) {
+    .gist-text {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        padding: 0 12px;
+    }
 }
