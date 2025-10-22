@@ -451,7 +451,6 @@
     // Tocar música
     function playSong() {
         if (songs.length === 0) {
-            alert('Nenhuma música disponível para reproduzir');
             return;
         }
         
@@ -463,7 +462,6 @@
             })
             .catch(err => {
                 console.log('Erro ao reproduzir:', err);
-                alert('Erro ao carregar a música. Verifique se o link está acessível.');
             });
     }
 
@@ -695,5 +693,4 @@
 
     document.addEventListener('DOMContentLoaded', init);
   </script>
-</body>
-</html>
+</
