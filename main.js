@@ -10,13 +10,13 @@ const songTitle = document.getElementById('song-title');
 const albumCover = document.getElementById('album-cover');
 const songArtist = document.getElementById('song-artist');
 const albumCoverContainer = document.querySelector('.album-cover');
+const playlistsContainer = document.getElementById('playlists-container');
 
 let songs = [];
 let currentSongIndex = 0;
 let isPlaying = false;
-let lastGistUpdate = null;
 
-// Buscar dados do Gist das músicas
+// Buscar dados do Gist das músicas - SÓ DO GIST
 async function loadSongsFromGist() {
     try {
         const gistUrl = 'https://gist.githubusercontent.com/rbxNoah/4b88f02e40eaecbd696d1e41772861e6/raw';
@@ -38,14 +38,8 @@ async function loadSongsFromGist() {
         return songs;
     } catch (error) {
         console.error('Erro ao carregar músicas:', error);
-        songs = [
-            {
-                title: "Música Exemplo",
-                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                cover: "https://raw.githubusercontent.com/rbxNoah/meu-site/main/8b1477859ffe84991872dec72db53e6d.jpg",
-                artist: "p.ed__"
-            }
-        ];
+        // SEM MÚSICA DE FALLBACK - só retorna array vazio
+        songs = [];
         return songs;
     }
 }
@@ -66,6 +60,16 @@ function loadSong(index) {
     progress.style.width = "0%";
     
     albumCoverContainer.classList.remove('playing');
+    updateActiveSongInList();
+}
+
+// Tocar música específica pelo índice
+function playSongByIndex(index) {
+    if (index >= 0 && index < songs.length) {
+        currentSongIndex = index;
+        loadSong(currentSongIndex);
+        playSong();
+    }
 }
 
 // Tocar música
@@ -79,6 +83,7 @@ function playSong() {
             isPlaying = true;
             playImg.src = "https://raw.githubusercontent.com/rbxNoah/meu-site/main/pause.png";
             albumCoverContainer.classList.add('playing');
+            updateActiveSongInList();
         })
         .catch(err => {
             console.log('Erro ao reproduzir:', err);
@@ -91,6 +96,7 @@ function pauseSong() {
     isPlaying = false;
     playImg.src = "https://raw.githubusercontent.com/rbxNoah/meu-site/main/play.png";
     albumCoverContainer.classList.remove('playing');
+    updateActiveSongInList();
 }
 
 // Próxima música
@@ -109,6 +115,58 @@ function prevSong() {
     currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
     loadSong(currentSongIndex);
     if (isPlaying) playSong();
+}
+
+// Criar lista de músicas
+function createSongsList(songs) {
+    if (!playlistsContainer) return;
+    
+    if (songs.length === 0) {
+        playlistsContainer.innerHTML = '<div class="no-songs">Nenhuma música encontrada no Gist</div>';
+        return;
+    }
+    
+    let html = `
+        <div class="playlist-section">
+            <h3 class="playlist-title">TODAS AS MÚSICAS</h3>
+            <div class="songs-list">
+    `;
+    
+    songs.forEach((song, index) => {
+        const isActive = index === currentSongIndex && isPlaying;
+        
+        html += `
+            <div class="song-item ${isActive ? 'active' : ''}" 
+                 onclick="playSongByIndex(${index})">
+                <img src="${song.cover}" alt="${song.title}" class="song-cover">
+                <div class="song-info-small">
+                    <div class="song-title-small ${isActive ? 'song-item-playing' : ''}">${song.title}</div>
+                    <div class="song-artist-small">${song.artist}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    playlistsContainer.innerHTML = html;
+}
+
+// Atualizar música ativa na lista
+function updateActiveSongInList() {
+    const songItems = document.querySelectorAll('.song-item');
+    songItems.forEach((item, index) => {
+        const isActive = index === currentSongIndex && isPlaying;
+        item.classList.toggle('active', isActive);
+        
+        const titleElement = item.querySelector('.song-title-small');
+        if (titleElement) {
+            titleElement.classList.toggle('song-item-playing', isActive);
+        }
+    });
 }
 
 // Configurar event listeners
@@ -139,73 +197,11 @@ function setupEventListeners() {
     audioPlayer.addEventListener('ended', nextSong);
 }
 
-// Função para detectar e criar elementos de mídia
-function createMediaElement(url) {
-    const lowerUrl = url.toLowerCase();
-    
-    if (lowerUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/)) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = "Imagem compartilhada";
-        img.className = 'shared-media';
-        return img;
-    } else if (lowerUrl.match(/\.(mp4|webm|ogg|mov)$/)) {
-        const video = document.createElement('video');
-        video.src = url;
-        video.controls = true;
-        video.className = 'shared-media';
-        return video;
-    } else if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
-        const videoId = lowerUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-        if (videoId) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId[1]}`;
-            iframe.frameBorder = "0";
-            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-            iframe.allowFullscreen = true;
-            iframe.className = 'shared-media youtube-video';
-            return iframe;
-        }
-    }
-    
-    return null;
-}
-
-// Processar conteúdo do Gist
-function processGistContent(content) {
-    const lines = content.split('\n');
-    const textLines = [];
-    const mediaUrls = [];
-    
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    
-    lines.forEach(line => {
-        const urls = line.match(urlRegex);
-        if (urls) {
-            urls.forEach(url => {
-                mediaUrls.push(url);
-            });
-            const textWithoutUrls = line.replace(urlRegex, '').trim();
-            if (textWithoutUrls) {
-                textLines.push(textWithoutUrls);
-            }
-        } else {
-            textLines.push(line);
-        }
-    });
-    
-    return {
-        text: textLines.join('\n'),
-        mediaUrls: mediaUrls
-    };
-}
-
-// Carregar conteúdo do Gist com cache busting
+// Função para carregar conteúdo do Gist (texto)
 async function loadGistContent() {
     const gistContent = document.getElementById('gist-content');
     
     try {
-        // Cache busting - adiciona timestamp para evitar cache
         const timestamp = `?t=${Date.now()}`;
         const gistUrl = `https://gist.githubusercontent.com/rbxNoah/87b6340c99ac6d7cf8a1af9919e0edca/raw${timestamp}`;
         
@@ -229,33 +225,12 @@ function displayGistContent(content) {
     const gistContent = document.getElementById('gist-content');
     gistContent.innerHTML = '';
     
-    const { text, mediaUrls } = processGistContent(content);
-    
-    // Adicionar texto
-    if (text.trim()) {
+    if (content.trim()) {
         const textElement = document.createElement('div');
         textElement.className = 'gist-text';
-        textElement.innerHTML = text.replace(/\n/g, '<br>');
+        textElement.innerHTML = content.replace(/\n/g, '<br>');
         gistContent.appendChild(textElement);
-    }
-    
-    // Adicionar mídia
-    if (mediaUrls.length > 0) {
-        const mediaContainer = document.createElement('div');
-        mediaContainer.className = 'media-container';
-        
-        mediaUrls.forEach(url => {
-            const mediaElement = createMediaElement(url);
-            if (mediaElement) {
-                mediaContainer.appendChild(mediaElement);
-            }
-        });
-        
-        gistContent.appendChild(mediaContainer);
-    }
-    
-    // Conteúdo padrão se estiver vazio
-    if (!text.trim() && mediaUrls.length === 0) {
+    } else {
         displayDefaultContent();
     }
 }
@@ -265,27 +240,35 @@ function displayDefaultContent() {
     const gistContent = document.getElementById('gist-content');
     gistContent.innerHTML = `
         <div class="gist-text">
-            <p>tentando não se MATAR
+            <p>tentando não se MATAR</p>
         </div>
     `;
 }
 
-// Verificar atualizações automaticamente a cada 30 segundos
+// Verificar atualizações automaticamente
 function startAutoRefresh() {
     setInterval(() => {
         loadGistContent();
-    }, 30000); // 30 segundos
+    }, 30000);
 }
 
 // Inicializar
 async function init() {
+    // Só inicializa depois que o usuário aceitou o aviso
+    const overlay = document.getElementById('blur-overlay');
+    if (overlay.style.display !== 'none') {
+        return;
+    }
+    
     songTitle.textContent = "Carregando músicas...";
     songArtist.textContent = "p.ed__";
     
     try {
-        await loadSongsFromGist();
+        songs = await loadSongsFromGist();
+        
         setupEventListeners();
         loadSong(currentSongIndex);
+        createSongsList(songs);
         await loadGistContent();
         startAutoRefresh();
         
@@ -295,6 +278,9 @@ async function init() {
         console.error('Erro na inicialização:', error);
         songTitle.textContent = "Erro ao carregar músicas";
         songArtist.textContent = "p.ed__";
+        if (playlistsContainer) {
+            playlistsContainer.innerHTML = '<div class="no-songs">Erro ao carregar músicas do Gist</div>';
+        }
     }
     
     // Preload das imagens
@@ -311,4 +297,20 @@ async function init() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// Torna a função global
+window.playSongByIndex = playSongByIndex;
+
+// Inicializa quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const overlay = document.getElementById('blur-overlay');
+        if (overlay && overlay.style.display === 'none') {
+            init();
+        }
+    }, 100);
+});
+
+// Inicializa quando o usuário aceitar o aviso
+document.getElementById('continuar').addEventListener('click', function() {
+    setTimeout(init, 700);
+});
