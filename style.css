@@ -339,3 +339,122 @@ footer {
         padding: 0 12px;
     }
 }
+
+/* NOVOS ESTILOS PARA PLAYERS */
+.playlists-container {
+  margin-top: 40px;
+  width: 100%;
+}
+
+.playlist-section {
+  margin-bottom: 30px;
+}
+
+.playlist-title {
+  font-size: 1.4rem;
+  color: #bb86fc;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.songs-list {
+  display: grid;
+  gap: 10px;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(30, 30, 30, 0.8);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.song-item:hover {
+  background: rgba(187, 134, 252, 0.1);
+  border-color: #bb86fc;
+  transform: translateX(5px);
+}
+
+.song-item.active {
+  background: rgba(187, 134, 252, 0.2);
+  border-color: #bb86fc;
+}
+
+.song-item-playing {
+  color: #bb86fc;
+  font-weight: bold;
+}
+
+.song-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.song-info-small {
+  flex: 1;
+}
+
+.song-title-small {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.song-artist-small {
+  font-size: 0.85rem;
+  color: #A80303;
+}
+
+.song-duration {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 10px;
+}
+
+.loading-playlists {
+  text-align: center;
+  color: #bb86fc;
+  font-style: italic;
+}
+
+.no-songs {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Responsividade para players */
+@media (max-width: 600px) {
+  .song-item {
+    padding: 10px 12px;
+  }
+  
+  .song-cover {
+    width: 35px;
+    height: 35px;
+    margin-right: 12px;
+  }
+  
+  .song-title-small {
+    font-size: 0.9rem;
+  }
+  
+  .song-artist-small {
+    font-size: 0.8rem;
+  }
+  
+  .playlist-title {
+    font-size: 1.2rem;
+  }
+}
